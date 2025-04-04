@@ -3,13 +3,15 @@ local M = {}
 function M.setup(opts)
     M.width = not opts.width and 80 or opts.width
     M.height = not opts.height and 20 or opts.height
+    M.toggle_key = not opts.toggle_key and '<leader>tf' or opts.toggle_key
 
-    vim.api.nvim_set_keymap('n', '<leader>tf', '', {
+    vim.api.nvim_set_keymap('n', M.toggle_key, '', {
         noremap = true,
         silent = true,
         callback = M.toggle_fterm
     })
-    vim.api.nvim_set_keymap('t', '<leader>tf', '', {
+
+    vim.api.nvim_set_keymap('t', M.toggle_key, '', {
         noremap = true,
         silent = true,
         callback = M.toggle_fterm
