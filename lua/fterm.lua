@@ -1,28 +1,20 @@
 local M = {}
 
 function M.setup(opts)
-    M.width = not opts.width and 80 or opts.width
-    M.height = not opts.height and 20 or opts.height
-    M.toggle_key = not opts.toggle_key and '<leader>tf' or opts.toggle_key
+    M.width = (opts and opts.width) or 80
+    M.height = (opts and opts.height) or 20
 
-    vim.api.nvim_set_keymap('n', M.toggle_key, '', {
+    vim.keymap.set({ "n", "t" }, '<leader>tf', M.toggle_fterm, {
         noremap = true,
         silent = true,
-        callback = M.toggle_fterm
-    })
-
-    vim.api.nvim_set_keymap('t', M.toggle_key, '', {
-        noremap = true,
-        silent = true,
-        callback = M.toggle_fterm
+        desc = "Toggle floating terminal"
     })
 end
 
 function M.open_fterm()
-    local bufnr = M.bufnr
-
-    if not bufnr or not vim.api.nvim_buf_is_valid(M.bufnr) then
-        bufnr = vim.api.nvim_create_buf(false, true);
+    if not M.termbufnr or not vim.api.nvim_buf_is_valid(M.termbufnr) then
+        M.termbufnr = vim.api.nvim_create_buf(false, true)
+        vim.fn.termopen(os.getenv("SHELL"), { buffer = M.termbufnr })
     end
 
     local opts = {
@@ -35,13 +27,7 @@ function M.open_fterm()
         border = "rounded",
     }
 
-    M.win = vim.api.nvim_open_win(bufnr, true, opts)
-
-    if not M.termbufnr or not vim.api.nvim_buf_is_valid(M.bufnr) then
-        M.termbufnr = vim.fn.termopen(os.getenv("SHELL"))
-    end
-
-    M.bufnr = bufnr
+    M.win = vim.api.nvim_open_win(M.termbufnr, true, opts)
 
     vim.cmd("startinsert")
 end
@@ -49,9 +35,11 @@ end
 function M.toggle_fterm()
     if M.win and vim.api.nvim_win_is_valid(M.win) then
         vim.api.nvim_win_hide(M.win)
+        M.win = nil
     else
         M.open_fterm()
     end
 end
 
 return M
+
